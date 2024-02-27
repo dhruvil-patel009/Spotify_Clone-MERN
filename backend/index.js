@@ -1,6 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const JwtStrategy = require("passport-jwt").Strategy,
+  ExtractJwt = require("passport-jwt").ExtractJwt;
+const passport = require("passport");
+const User = require("./models/User");
 const app = express();
 const port = 8000;
 
@@ -22,6 +26,29 @@ mongoose
   .catch((err) => {
     console.log("Error connecting to Mongo");
   });
+
+// setup password jwt
+var opts = {};
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.secretOrKey = process.env.SECRET_KEY;
+
+console.log(process.env.SECRET_KEY);
+
+passport.use(
+  new JwtStrategy(opts, function (jwt_payload, done) {
+    User.findOne({ id: jwt_payload.sub }, function (err, user) {
+      if (err) {
+        return done(err, false);
+      }
+      if (user) {
+        return done(null, user);
+      } else {
+        return done(null, false);
+        // or you could create a new account
+      }
+    });
+  })
+);
 
 app.get("/", (req, res) => {
   // req is the request object
