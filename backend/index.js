@@ -5,6 +5,7 @@ const JwtStrategy = require("passport-jwt").Strategy,
   ExtractJwt = require("passport-jwt").ExtractJwt;
 const passport = require("passport");
 const User = require("./models/User");
+const authRoutes = require("./routes/auth");
 const app = express();
 const port = 8000;
 
@@ -28,12 +29,10 @@ mongoose
   });
 
 // setup password jwt
-var opts = {};
+let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SECRET_KEY;
-
 console.log(process.env.SECRET_KEY);
-
 passport.use(
   new JwtStrategy(opts, function (jwt_payload, done) {
     User.findOne({ id: jwt_payload.sub }, function (err, user) {
@@ -60,3 +59,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log("Port is " + port);
 });
+
+// 8   3:12
